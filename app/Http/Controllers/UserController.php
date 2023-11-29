@@ -1,7 +1,7 @@
-
 <?php
 
 namespace App\Http\Controllers;
+
 
 use App\Http\Requests\UserRequest;
 use Illuminate\Http\Request;
@@ -17,6 +17,7 @@ use Exception;
 use App\Models\{Rol,Permiso};
 use App\Notifications\CuentaDesactivada;
 use Illuminate\Support\Str;
+
 class UserController extends Controller
 {
 
@@ -28,8 +29,9 @@ class UserController extends Controller
   public function fetchData(Request $request){
 
     $filter = $request->all();
-    $searchs = collect(['nombres','email']);
+    $searchs = collect(['nombre','email']);
     $paginator = User::where(fn($q) => $searchs->each(fn($s) => $q->where($s,"LIKE","%{$filter['q']}%","OR")))
+                ->when(isset($filter['role']),fn($q) => $q->where('rol_id',$filter['role']))
                 ->orderBy($filter['sortBy'] ?: 'id', $filter['isSortDirDesc'] ? 'desc' : 'asc')
                 ->with(['rol','permisos'])
                 ->paginate($filter['perPage']);
@@ -50,10 +52,9 @@ class UserController extends Controller
    */
   public function store(UserRequest $request)
   {
-
     try {
       DB::beginTransaction();
-      $usuario = $this->crearUsuario($request->all());
+      $usuario = $this->crearUsuario($request->validated());
       $usuario->notify((new WelcomeUsuario($usuario,$request->headers->get('origin'))));
       DB::commit();
       $usuario->cargar();
@@ -62,6 +63,9 @@ class UserController extends Controller
     } catch (Exception $e) {
       DB::rollBack();
       $result = false;
+
+      dd($e->getMessage());
+
     }
 
     return response()->json(['result' => $result, 'usuario' => ($result) ? $usuario : null]);
@@ -196,6 +200,7 @@ class UserController extends Controller
 
       $usuario->password = $datos['password'];
       $usuario->is_password = true;
+      $usuario->activo = true;
       $usuario->save();
 
       DB::commit();
@@ -226,6 +231,16 @@ class UserController extends Controller
     return response()->json(\compact($result,$usuario));
   }
 
+
+  public function cambiarStatus(Request $request,User $usuario){
+
+    $usuario->activo = !$usuario->activo;
+    $result = $usuario->save();
+    
+    return response()->json([
+      'result' => $result
+    ]);
+  }
 
 
   public function changePassword(Request $request, User $usuario)

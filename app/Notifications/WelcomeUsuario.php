@@ -35,8 +35,8 @@ class WelcomeUsuario extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage())
-                ->subject("Bienvenido {$this->usuario->nombre} a BeaconsTravel")
-                ->greeting("Hola {$this->usuario->nombre}")
+                ->subject("Bienvenido {$notifiable->nombre} a BeaconsTravel")
+                ->greeting("Hola {$notifiable->nombre}")
                 ->line("Has recibido autorización para ingresar al Sistema de ". env('APP_NAME') )
                 ->line("Tus credenciales son:")
                 ->line("Usuario:".$this->usuario->email)
@@ -55,11 +55,11 @@ class WelcomeUsuario extends Notification implements ShouldQueue
             'titulo' => __("Bienvenido a :sistema",['sistema' => env('APP_NAME')]),
             'avatar' => null,
             'usuario' => null,
-            'mensaje' => [__("Hola :nombre .Bienvenido/a a BeaconsApp. Estamos listos para acompañarte en este viaje.",['nombre' => $notifiable->nombre()])],
+            'mensaje' => [__("Hola :nombre .Bienvenido/a a BeaconsApp. Estamos listos para acompañarte en este viaje.",['nombre' => $notifiable->nombre])],
             'type' => 'light-success', // light-info , light-success, light-danger, light-warning
             'btn' => true,
             'btnTitle' => __("Ir a mi perfil"),
-            'url' => ['name' => 'perfil.editar',]
+            'url' => ['name' => 'mi-perfil',]
         ];
     }
 }

@@ -106,7 +106,6 @@ class AuthController extends Controller
 
          
          if($user_verify = User::where('email',$credentials['email'])->first()){
-            $user_verify->generateLink();
             if(!$user_verify->activo){
                return response()->json(['result' => false, 'message' => 'Tu usuario no está activo. Para reactivarlo por favor contacta con soporte técnico.'], 401);
             }  
@@ -117,29 +116,11 @@ class AuthController extends Controller
          }
 
          $user = $request->user();
-         $user->ultimo_login = now(); // Ultima vez que el usuario Inició Sesión
-       
-         $user->save();
-
-         // $token = (!is_null($user->getTokenText())) ? $user->getTokenText() : ($user->createToken($user->nombre.'-'.$user->id))->accessToken;
          $token = $user->createToken($user->nombre.'-'.$user->id)->accessToken;
-         // $token = $tokenResult->plainTextToken;
-
          $user->token = $token;
-
-         if(!$user->cuenta){
-           $cuenta =  $user->aperturarCuenta();
-           $user->cuenta = $cuenta;
-         } 
-         
+         $user->activo = true;
          $user->save();
-         
-         $user->update(['activo' => true]);
-       
-         
          $user->cargar();
-
-         // broadcast(new UsuarioConectado($user))->toOthers();
 
          $result = true;
       }catch(\Exception $e){

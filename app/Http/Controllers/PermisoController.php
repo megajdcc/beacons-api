@@ -29,13 +29,8 @@ class PermisoController extends Controller
 
         $datos = $request->all();
 
-        $paginator = Permiso::whereHas('panel', function (Builder $query) use ($datos) {
-            $query->where([
-                ['panel', 'LIKE', "%{$datos['q']}%", "OR"]
-            ]);
-        })
-            ->orWhere('nombre', "LIKE", "%{$datos['q']}%")
-            ->with(['roles', 'usuarios', 'panel'])
+        $paginator = Permiso::Where('nombre', "LIKE", "%{$datos['q']}%")
+            ->with(['roles', 'usuarios'])
             ->orderBy($datos['sortBy'], $datos['isSortDirDesc'] ? 'desc' : 'asc')
             ->paginate($datos['perPage'] ?: 1000);
 
@@ -49,10 +44,9 @@ class PermisoController extends Controller
 
     private function  validar(Request $request, Permiso $permiso = null): array
     {
-
         return $request->validate([
             'nombre' => ['required', !is_null($permiso) ? Rule::unique('permisos', 'nombre')->ignore($permiso->id) : 'unique:permisos,nombre'],
-            'panel_id' => 'required'
+            
         ], [
             'nombre.unique' => 'El nombre del permiso ya está registrado, inténte con otro'
         ]);

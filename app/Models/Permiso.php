@@ -6,7 +6,6 @@ use App\Models\PermisosAsignados;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
-use App\Models\Panel;
 
 class Permiso extends Model
 {
